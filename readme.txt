@@ -2,7 +2,7 @@ Control.ahk
 ==============================================================================================
 Navigation
     mouse scroll | up/down
-    
+
 Selection
     tab         |   loop through hotkey selection
     shift+tab   |   reverse loop
@@ -31,11 +31,9 @@ Attack
 ctrl + LM       |   Set Move/Attack point
 shift + LM      |   Set Rally locations for all buildings
 alt + LM        |   
-    Q           |   Move All
-    W           |   Attack All
-    E
-    R
-
+    Q           |   
+    W           |   Move All
+    E           |   Attack All
 
 
 Observe.ahk
