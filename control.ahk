@@ -3,13 +3,15 @@
 #InstallMouseHook
 #SingleInstance
 
+global maxHotkey:=0
 global lastAction:=a_tickcount
+global lastBuild:=a_tickcount
 global currentHotkey:=0
 global currentBuild:=1
 global builds:=[["Depot",["b","s"]],["Turret",["b","t"]],["Bunker",["b","u"]],["Barricks",["b","b"]],["Acadamy",["b","a"]],["Refinery",["b","r"]],["Factory",["v","f"]],["Engineering Bay",["b","e"]],["Starport",["v","s"]],["Science Facility",["v","b"]],["Armory",["v","a"]],["Command Center",["b","c"]]]
 now:=a_tickcount
-global units:=[["scv","s",9,False,now,0],["marine","m",10,False,now,0],["tank","t",45,false,now,0],["wraith","w",30,false,now,0]]
-
+global units:=[["scv","s",10,False,now,0,[]],["marine","m",10,False,now,0,[]],["tank","t",45,false,now,0,[]],["wraith","w",30,false,now,0,[]]]
+global buildOrder:=[1,4,6,1,5,7,1,1]
 
 Gui, GUI_Overlay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4, Segoe UI Bold
@@ -25,7 +27,7 @@ Gui, GUI_Overlay:Show, NoActivate, starcraft
 
 UpdateWindow()
 
-SetTimer, AutoBuild, 5000
+SetTimer, AutoBuild, 7000
 
 AutoBuild:
     waitTime:=3
@@ -87,38 +89,39 @@ return
 
 callBuild()
 {
+    if ((a_tickcount-lastBuild) < 1000){
+        NextBuild()
+    } 
     building:=builds[currentBuild]     
     out("building " . building[1])
-    send {Esc}
-    for index, value in building[2]{
-        out("sending " . value)
-        sleep 50
-        send %value%    
+    sendkey( "{Esc}" )
+    for index, value in building[2]{        
+        sendkey(value)
     }
+    lastBuild:=a_tickcount
     return
 }
 
-trainForAllHotkeys(index){
-    Loop 10{
-        hotkey:=10-a_index
-        out( "hotkey " . hotkey)
-        send %hotkey%  
-        sleep 50      
-        train(index)
-    }
+trainForAllHotkeys(index){    
+        unit:=units[index]
+        for index, hotkey in unit[7]{
+            out( "building " . unit[1] " on hotkey " . hotkey)
+            sendkey(hotkey)            
+            train(index)
+        }    
     return
 }
 train(index){
     out("training " units[index][1])
     unit:=units[index][2] 
-    send %unit% 
-    sleep 100
+    sendkey(unit)
     return
 }
 
 enableAutoTraining(index){
     units[index][4]:=True
     units[index][6]:=0
+    units[index][7].Push(currentHotkey)
     UpdateWindow()
     return
 }
@@ -131,7 +134,6 @@ disableAutoTraining(index){
 
 `:: 
 SetCurrentHotkey()
-NextHotkey()
 return
 
 tab::
@@ -171,9 +173,13 @@ PrevBuild(){
 }
 
 SetCurrentHotkey()
-{
+{    
+    NextHotkey()
+    if(currentHotkey> maxHotkey){
+        maxHotkey:=currentHotkey
+    }
     out("SetCurrentHotkey " currentHotkey)
-    send ^%currentHotkey%
+    sendkey( ^%currentHotkey%)
     UpdateWindow()
 }
 return 
@@ -183,8 +189,7 @@ PrevHotkey(){
     if(currentHotkey<0){
         currentHotkey:=9
     }
-    send %currentHotkey%
-    out("PrevHotkey " currentHotkey)
+    sendkey( %currentHotkey%)
     UpdateWindow()
 }
 return
@@ -194,7 +199,7 @@ NextHotkey(){
     if(currentHotkey>9){
         currentHotkey:=0
     }
-    send %currentHotkey%
+    sendkey( %currentHotkey%)
     out("NextHotkey " currentHotkey)
     UpdateWindow()
 }
@@ -202,8 +207,8 @@ return
 
 ViewHotkey(){
     out("ViewHotkey")
-    send %currentHotkey%
-    send %currentHotkey%
+    sendkey( %currentHotkey%)
+    sendkey( %currentHotkey%)
 }
 return
 
@@ -231,4 +236,14 @@ UpdateWindow(){
     
     GuiControl, GUI_Overlay:, TEXT_Timer3,AutoTraining:%auto%
    return
+}
+
+sendkey(key){
+    if(IfWinActive "Brood War"){
+        out("sending key " . key)
+        send %key%
+        sleep 100
+    }else{
+        out("cannot send " . key)
+    }
 }
