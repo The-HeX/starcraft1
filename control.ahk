@@ -1,3 +1,7 @@
+;removed caps to toggle build
+;%A_MyDocuments%
+;state object to track assigned hotkeys
+;documented unit and hotkey fields
 #IfWinActive Brood War
 #InstallKeybdHook
 #InstallMouseHook
@@ -10,8 +14,10 @@ global currentHotkey:=0
 global currentBuild:=1
 global builds:=[["Depot",["b","s"]],["Turret",["b","t"]],["Bunker",["b","u"]],["Barricks",["b","b"]],["Acadamy",["b","a"]],["Refinery",["b","r"]],["Factory",["v","f"]],["Engineering Bay",["b","e"]],["Starport",["v","s"]],["Science Facility",["v","b"]],["Armory",["v","a"]],["Command Center",["b","c"]]]
 now:=a_tickcount
+; type , keytosend , frequency(seconds) , autoTrainEnabled , lastAutoTrainTime , numberAutoTrained , hotkeysToTrain
 global units:=[["scv","s",10,False,now,0,[]],["marine","m",10,False,now,0,[]],["tank","t",45,false,now,0,[]],["wraith","w",30,false,now,0,[]]]
-global buildOrder:=[1,4,6,1,5,7,1,1]
+; hotkey Assigned,type,autobuild
+global hotkeys:=[[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false]]
 
 Gui, GUI_Overlay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4, Segoe UI Bold
@@ -27,7 +33,7 @@ Gui, GUI_Overlay:Show, NoActivate, starcraft
 
 UpdateWindow()
 
-SetTimer, AutoBuild, 7000
+SetTimer, AutoBuild, 6000
 
 AutoBuild:
     waitTime:=3
@@ -122,6 +128,7 @@ enableAutoTraining(index){
     units[index][4]:=True
     units[index][6]:=0
     units[index][7].Push(currentHotkey)
+    hotkey[currentHotkey][3]:=true
     UpdateWindow()
     return
 }
@@ -142,14 +149,6 @@ return
 
 +tab::
 PrevHotkey()
-return
-
-CapsLock::
-NextBuild()
-return
-
-+CapsLock::
-PrevBuild()
 return
 
 NextBuild(){
@@ -181,7 +180,13 @@ SetCurrentHotkey()
     out("SetCurrentHotkey " currentHotkey)
     send ^%currentHotkey%
     send +{PrintScreen}
+    hotkey[currentHotkey][0]:=True
     UpdateWindow()
+    ;;kick off program to identify selection from screenshot
+    Loop, Files, %A_MyDocuments%\starcraft\screenshots\*.png{
+        out(A_LoopFileName)
+    }
+   
 }
 return 
 

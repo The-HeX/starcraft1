@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using Patagames.Ocr;
 using Patagames.Ocr.Enums;
 
@@ -10,16 +11,28 @@ namespace ConsoleApplication1
     {
         private static void Main(string[] args)
         {
-            CropDisplay();
 
-            foreach (var file in Directory.GetFiles(@"c:\temp\screenshots\display\"))
-                ParseData(file);
-
-            Console.WriteLine("done");
-            Console.Read();
+            // FIND THE MOST RECENT FILE
+            var dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            var file=Directory.GetFiles(dir + @"\Starcraft\Screenshots")
+                .Select(a => new {Date = File.GetLastWriteTime(a), Name = a}).OrderByDescending(a => a.Date).FirstOrDefault();
+            if (file != null)
+            {
+                // CROP DISPLAY . RETURN FILENAME
+                var cropped = CropScreenSections(file.Name);
+                // PARSE FILE NAME
+                var value = ParseData(cropped);
+                // WRITE FILE, TO ARG LOCATION
+                var path = args.Length>0?args[0]:Path.GetTempFileName();
+                Console.WriteLine($"writing results {value} to {path}");
+                using (var output= File.CreateText(path))
+                {
+                    output.WriteLine(value);
+                }
+            }
         }
 
-        private static void ParseData(string imagename)
+        private static string ParseData(string imagename)
         {
             using (var api = OcrApi.Create())
             {
@@ -32,24 +45,19 @@ namespace ConsoleApplication1
                 {
                     format = format.Substring(format.IndexOf("Terran"), format.Length - format.IndexOf("Terran"));
                 }
-                Console.WriteLine(format);
+                return format.TrimStart(' ').TrimEnd(' ');
             }
         }
 
 
-        private static void CropDisplay()
+        private static string CropScreenSections(string filename)
         {
-            var dir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            foreach (var input in Directory.GetFiles(dir + @"\Starcraft\Screenshots"))
-            {
-                var src = Image.FromFile(input);
-
-                CropItem(src, input);
-                MiniMapItem(src, input);
-            }
+                var src = Image.FromFile(filename);
+                return CropDisplay(src, filename);
+                CropMiniMap(src, filename);
         }
 
-        private static void CropItem(Image src, string input)
+        private static string CropDisplay(Image src, string input)
         {
             var y1 = 776;
             var y2 = 954;
@@ -57,13 +65,15 @@ namespace ConsoleApplication1
             var x2 = 790;
             var rect = new Rectangle(x1, y1, x2 - x1, y2 - y1);
             var cropped = cropImage(src, rect);
-            var filename = @"c:\temp\screenshots\display\" + Path.GetFileName(input);
+            var filename = Path.GetTempFileName();
+            //var filename = @"c:\temp\screenshots\display\" + Path.GetFileName(input);
             if (File.Exists(filename))
                 File.Delete(filename);
             cropped.Save(filename);
+            return filename;
         }
 
-        private static void MiniMapItem(Image src, string input)
+        private static void CropMiniMap(Image src, string input)
         {
             var y1 = 690;
             var y2 = 960;
