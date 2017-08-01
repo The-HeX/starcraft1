@@ -180,13 +180,11 @@ SetCurrentHotkey()
     out("SetCurrentHotkey " currentHotkey)
     send ^%currentHotkey%
     send +{PrintScreen}
-    hotkey[currentHotkey][0]:=True
+    hotkey[currentHotkey][1]:=True
+    RunWait, parse.exe "results.txt", Min
+    FileRead, result, results.txt
+    hotkey[currentHotkey][2]:=result
     UpdateWindow()
-    ;;kick off program to identify selection from screenshot
-    Loop, Files, %A_MyDocuments%\starcraft\screenshots\*.png{
-        out(A_LoopFileName)
-    }
-   
 }
 return 
 
@@ -241,6 +239,13 @@ UpdateWindow(){
     }
     
     GuiControl, GUI_Overlay:, TEXT_Timer3,AutoTraining:%auto%
+    hotkeysAssigned:=""
+    for index, hotkey in hotkeys{
+        if(hotkey[1]=True){
+            hotkeysAssigned.= index . 
+        }
+    }
+    GuiControl, GUI_Overlay:, TEXT_Timer4,Hotkeys:%hotkeysAssigned%
    return
 }
 
