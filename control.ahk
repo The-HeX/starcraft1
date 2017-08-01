@@ -174,12 +174,13 @@ PrevBuild(){
 
 SetCurrentHotkey()
 {    
-    NextHotkey()
+    currentHotkey+=1
     if(currentHotkey> maxHotkey){
         maxHotkey:=currentHotkey
     }
     out("SetCurrentHotkey " currentHotkey)
-    sendkey( ^%currentHotkey%)
+    send ^%currentHotkey%
+    send +{PrintScreen}
     UpdateWindow()
 }
 return 
@@ -187,19 +188,19 @@ return
 PrevHotkey(){    
     currentHotkey:=currentHotkey-1
     if(currentHotkey<0){
-        currentHotkey:=9
+        currentHotkey:=maxHotkey
     }
-    sendkey( %currentHotkey%)
+    sendkey( currentHotkey)
     UpdateWindow()
 }
 return
 
 NextHotkey(){    
     currentHotkey:=currentHotkey+1
-    if(currentHotkey>9){
+    if(currentHotkey>9 or currentHotkey>maxHotkey){
         currentHotkey:=0
     }
-    sendkey( %currentHotkey%)
+    sendkey( currentHotkey )
     out("NextHotkey " currentHotkey)
     UpdateWindow()
 }
