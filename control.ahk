@@ -7,31 +7,39 @@
 #InstallMouseHook
 #SingleInstance
 
-global maxHotkey:=0
-global lastAction:=a_tickcount
-global lastBuild:=a_tickcount
-global currentHotkey:=0
-global currentBuild:=1
-global builds:=[["Depot",["b","s"]],["Turret",["b","t"]],["Bunker",["b","u"]],["Barricks",["b","b"]],["Acadamy",["b","a"]],["Refinery",["b","r"]],["Factory",["v","f"]],["Engineering Bay",["b","e"]],["Starport",["v","s"]],["Science Facility",["v","b"]],["Armory",["v","a"]],["Command Center",["b","c"]]]
-now:=a_tickcount
-; type , keytosend , frequency(seconds) , autoTrainEnabled , lastAutoTrainTime , numberAutoTrained , hotkeysToTrain
-global units:=[["scv","s",10,False,now,0,[]],["marine","m",10,False,now,0,[]],["tank","t",45,false,now,0,[]],["wraith","w",30,false,now,0,[]]]
-; hotkey Assigned,type,autobuild
-global hotkeys:=[[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false]]
+global maxHotkey
+global lastAction
+global lastBuild
+global currentHotkey
+global currentBuild
+global builds
+global now
+global units
+global hotkeys
 
 Gui, GUI_Overlay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4, Segoe UI Bold
 Gui, Add, Text, w200  vTEXT_Timer cYellow,
 Gui, Add, Text, w200  vTEXT_Timer2 cYellow,
 Gui, Add, Text, w200  vTEXT_Timer3 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer4 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer5 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer6 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer7 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer8 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer9 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer10 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer11 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer12 cYellow,
+Gui, Add, Text, w200  vTEXT_Timer13 cYellow,
+
 Gui, Color, 000000
 WinSet, Transparent, 220
 Winset, AlwaysOnTop, on
 Gui, Show, Hide, Overlay   
 Gui, GUI_Overlay:Show, NoActivate, starcraft 
 
-
-UpdateWindow()
+gosub reset
 
 SetTimer, AutoBuild, 6000
 
@@ -56,6 +64,20 @@ AutoBuild:
     }
 return
 
+reset:
+    global maxHotkey:=0
+    global lastAction:=a_tickcount
+    global lastBuild:=a_tickcount
+    global currentHotkey:=0
+    global currentBuild:=1
+    global builds:=[["Depot",["b","s"]],["Turret",["b","t"]],["Bunker",["b","u"]],["Barracks",["b","b"]],["Acadamy",["b","a"]],["Refinery",["b","r"]],["Factory",["v","f"]],["Engineering Bay",["b","e"]],["Starport",["v","s"]],["Science Facility",["v","b"]],["Armory",["v","a"]],["Command Center",["b","c"]]]
+    now:=a_tickcount
+    ; type , keytosend , frequency(seconds) , autoTrainEnabled , lastAutoTrainTime , numberAutoTrained , hotkeysToTrain
+    global units:=[["scv","s",10,False,now,0,[],"Command Center"],["marine","m",10,False,now,0,[],"Barracks"],["tank","t",45,false,now,0,[],"Factory"],["wraith","w",30,false,now,0,[],"Starport"],["Medic","c",10,false,now,0,[],"Barracks"]]
+    ; hotkey Assigned,type,autobuild
+    global hotkeys:=[[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false]]
+    UpdateWindow()
+return
 *::
     lastAction:=a_tickcount
 return
@@ -92,6 +114,11 @@ s::
 q::
     callbuild()
 return 
+
+^z::
+    gosub reset
+return 
+
 
 callBuild()
 {
@@ -180,10 +207,13 @@ SetCurrentHotkey()
     out("SetCurrentHotkey " currentHotkey)
     send ^%currentHotkey%
     send +{PrintScreen}
-    hotkey[currentHotkey][1]:=True
-    RunWait, parse.exe "results.txt", Min
+    
+    RunWait, parse.exe "results.txt", Hide
+    sleep 250
     FileRead, result, results.txt
-    hotkey[currentHotkey][2]:=result
+    Out("Identified hotkey " . result )
+    hotkeys[currentHotkey][1]:= True
+    hotkeys[currentHotkey][2]:= result
     UpdateWindow()
 }
 return 
@@ -218,7 +248,7 @@ return
 
 
 Out(message){
-    outputdebug sc1 " " %message%
+    outputdebug sc1 . %message%
 }
 return
 
@@ -226,26 +256,41 @@ return
 
 
 UpdateWindow(){
-    building:=builds[currentBuild][1]    
+    building:=builds[currentBuild][1]  
     GuiControl, GUI_Overlay:, TEXT_Timer,CurrentHotkey: %currentHotkey%
-    GuiControl, GUI_Overlay:, TEXT_Timer2,SelectedBuilding:%currentBuild% %building%
+    GuiControl, GUI_Overlay:, TEXT_Timer2,SelectedBuilding: %currentBuild% %building%
 
     auto:=""
     global units
     for index, unit in units  {  
-        if(unit[4]=True){
+        if(unit[4]=True){ 
              auto .= unit[1] . " "  . unit[6] . " | "
          }
     }
     
-    GuiControl, GUI_Overlay:, TEXT_Timer3,AutoTraining:%auto%
+    GuiControl, GUI_Overlay:, TEXT_Timer3,AutoTraining: %auto%
     hotkeysAssigned:=""
-    for index, hotkey in hotkeys{
-        if(hotkey[1]=True){
-            hotkeysAssigned.= index . 
-        }
-    }
-    GuiControl, GUI_Overlay:, TEXT_Timer4,Hotkeys:%hotkeysAssigned%
+
+    hotkey:=hotkeys[1][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer4,Hotkeys: 0 - %hotkey%
+    hotkey:=hotkeys[2][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer5,Hotkeys: 1 - %hotkey%
+    hotkey:=hotkeys[3][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer6,Hotkeys: 2 - %hotkey%
+    hotkey:=hotkeys[4][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer7,Hotkeys: 3 - %hotkey%
+   hotkey:=hotkeys[5][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer8,Hotkeys: 4 - %hotkey%
+   hotkey:=hotkeys[6][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer9,Hotkeys: 5 - %hotkey%
+   hotkey:=hotkeys[7][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer10,Hotkeys: 6 - %hotkey%
+   hotkey:=hotkeys[8][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer11,Hotkeys: 7 - %hotkey%
+   hotkey:=hotkeys[9][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer12,Hotkeys: 8 - %hotkey%
+   hotkey:=hotkeys[10][2]
+    GuiControl, GUI_Overlay:, TEXT_Timer13,Hotkeys: 9 - %hotkey%
    return
 }
 
