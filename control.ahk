@@ -17,19 +17,33 @@ global AutoBuild
 
 Gui, GUI_Overlay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4, Segoe UI Bold
-Gui, Add, Text, w200  vTEXT_Timer2 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer3 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer cYellow,
-Gui, Add, Text, w200  vTEXT_Timer4 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer5 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer6 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer7 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer8 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer9 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer10 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer11 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer12 cYellow,
-Gui, Add, Text, w200  vTEXT_Timer13 cYellow,
+Gui, Add, Text, x140 y20 w100 h30   vTEXT_Timer2 cGray,
+Gui, Add, Text, x140 y60 w100 h30   vTEXT_Timer3 cGray,
+Gui, Add, Text, x140 y100 w100 h30   vTEXT_Timer cGray,
+Gui, Add, Text, x140 y140 w100 h30   vTEXT_Timer4 cGray,
+Gui, Add, Text, x140 y180 w100 h30   vTEXT_Timer5 cGray,
+Gui, Add, Text, x140 y220 w100 h30   vTEXT_Timer6 cGray,
+Gui, Add, Text, x140 y260 w100 h30   vTEXT_Timer7 cGray,
+Gui, Add, Text, x140 y300 w100 h30   vTEXT_Timer8 cGray,
+Gui, Add, Text, x140 y340 w100 h30   vTEXT_Timer9 cGray,
+Gui, Add, Text, x140 y380 w100 h30   vTEXT_Timer10 cGray,
+Gui, Add, Text, x140 y420 w100 h30   vTEXT_Timer11 cGray,
+Gui, Add, Text, x140 y460 w100 h30   vTEXT_Timer12 cGray,
+Gui, Add, Text, x140 y500 w100 h30   vTEXT_Timer13 cGray,
+
+Gui, Add, Text, x20 y20 w100 h30 cGray, Quick Build: 
+Gui, Add, Text, x20 y60 w100 h30  cGray, Auto Build:
+Gui, Add, Text, x20 y100 w100 h30 cGray, Selected:
+Gui, Add, Text, x20 y140 w100 h30 cGray,  Hotkey 0 =>
+Gui, Add, Text, x20 y180 w100 h30 cGray,  Hotkey 1 => 
+Gui, Add, Text, x20 y220 w100 h30 cGray,  Hotkey 2 =>
+Gui, Add, Text, x20 y260 w100 h30 cGray,  Hotkey 3 =>
+Gui, Add, Text, x20 y300 w100 h30 cGray,  Hotkey 4 =>
+Gui, Add, Text, x20 y340 w100 h30 cGray,  Hotkey 5 => 
+Gui, Add, Text, x20 y380 w100 h30  cGray, Hotkey 6 =>  
+Gui, Add, Text, x20 y420 w100 h30  cGray, Hotkey 7 => 
+Gui, Add, Text, x20 y460 w100 h30  cGray, Hotkey 8 => 
+Gui, Add, Text, x20 y500 w100 h30  cGray, Hotkey 9 =>
 
 Gui, Color, 000000
 WinSet, Transparent, 220
@@ -288,7 +302,7 @@ SetCurrentHotkey()
     out("SetCurrentHotkey " currentHotkey)
     send ^%currentHotkey%
     send +{PrintScreen}
-    
+    sleep 500
     RunWait, parse.exe "results.txt", Hide
     sleep 250
     FileRead, result, results.txt
@@ -337,34 +351,40 @@ return
 
 
 UpdateWindow(){
-    building:=builds[currentBuild][1]  
-    GuiControl, GUI_Overlay:, TEXT_Timer2,Quick Build:  %building%
+    building:=builds[currentBuild][1]      
+    GuiControl, GUI_Overlay:, TEXT_Timer2,  %building%
+    Gui, Font, cYellow Bold, Verdana
+    GuiControl, Font, TEXT_Timer2
 
     auto:=autobuild    
-    GuiControl, GUI_Overlay:, TEXT_Timer3,AutoTraining: %auto%
-
-    GuiControl, GUI_Overlay:, TEXT_Timer,CurrentHotkey: %currentHotkey%
-
+    GuiControl, GUI_Overlay:,  TEXT_Timer3 , %auto% 
+    
+    if(autobuild=true){
+        Gui, Font, cYellow Bold, Verdana
+        GuiControl, Font, TEXT_Timer3
+    }
+    
+    GuiControl, GUI_Overlay:, TEXT_Timer, %currentHotkey%
     hotkey:=hotkeys[1][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer4,Hotkey 0 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer4, %hotkey%
     hotkey:=hotkeys[2][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer5,Hotkey 1 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer5, %hotkey%
     hotkey:=hotkeys[3][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer6,Hotkey 2 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer6, %hotkey%
     hotkey:=hotkeys[4][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer7,Hotkey 3 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer7, %hotkey%
    hotkey:=hotkeys[5][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer8,Hotkey 4 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer8, %hotkey%
    hotkey:=hotkeys[6][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer9,Hotkey 5 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer9, %hotkey%
    hotkey:=hotkeys[7][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer10,Hotkey 6 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer10,  %hotkey%
    hotkey:=hotkeys[8][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer11,Hotkey 7 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer11,  %hotkey%
    hotkey:=hotkeys[9][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer12,Hotkey 8 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer12,  %hotkey%
    hotkey:=hotkeys[10][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer13,Hotkey 9 => %hotkey%
+    GuiControl, GUI_Overlay:, TEXT_Timer13,  %hotkey%
    return
 }
 
