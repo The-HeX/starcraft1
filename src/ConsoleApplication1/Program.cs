@@ -60,8 +60,27 @@ namespace ConsoleApplication1
                 {
                     format = format.Substring(format.IndexOf("Terran"), format.Length - format.IndexOf("Terran"));
                 }
-                return format.Replace("Terran ", "").Replace("‘", "").TrimStart(' ').TrimEnd(' ');
+                return CleanString(format);
             }
+        }
+
+        private static string CleanString(string format)
+        {
+            var charToReplace = (new string[]
+            {
+                "`",
+                "'",
+                "Terran",
+                "~"
+            }).ToList();
+
+            foreach (var replace in charToReplace)
+            {
+                format = format.Replace(replace, "");
+            }
+            return format
+                    .TrimStart(' ')
+                    .TrimEnd(' ');
         }
 
 

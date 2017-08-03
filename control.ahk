@@ -16,6 +16,7 @@ global builds
 global now
 global units
 global hotkeys
+global AutoBuild
 
 Gui, GUI_Overlay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4, Segoe UI Bold
@@ -41,30 +42,42 @@ Gui, GUI_Overlay:Show, NoActivate, starcraft
 
 gosub reset
 
-SetTimer, AutoBuild, 6000
+SetTimer, AutoBuild, 5000
 
 AutoBuild:
+if(autobuild=true){
     waitTime:=3
     if((a_tickcount - lastAction)/1000> waitTime){
+     
+        ; train units ============================================================
         global units
         for index, unit in units  {  
-            if(unit[4]=True){
-                diff:= (a_tickcount - unit[5])/1000
-                if(diff > unit[3]){
-                    if((a_tickcount - lastAction)/1000> waitTime){
-                        out("auto build "unit[1] "after time period "unit[3])
-                        unit[5]:=a_tickcount
-                        unit[6] += 1
-                        trainForAllHotkeys(index)
-                        UpdateWindow()
-                    }
+            diff:= (a_tickcount - unit[5])/1000
+            if(diff > unit[3]){
+                if((a_tickcount - lastAction)/1000> waitTime){
+                    out("auto build "unit[1] " after time period "unit[3])
+                    unit[5]:=a_tickcount
+                    unit[6] += 1
+                    trainForAllHotkeys(index)                   
                 }
             }
         }
+
+        ; ====================================================================
+        ; upgrade buildings
+         diff:= (a_tickcount - lastUpgrade)/1000
+         ; try to upgrade every 45 seconds
+         if(diff>45){  
+            RunUpgrades()
+         }
+
+          UpdateWindow()
     }
+}
 return
 
 reset:
+    global autoBuild:=false
     global maxHotkey:=0
     global lastAction:=a_tickcount
     global lastBuild:=a_tickcount
@@ -73,9 +86,11 @@ reset:
     global builds:=[["Depot",["b","s"]],["Turret",["b","t"]],["Bunker",["b","u"]],["Barracks",["b","b"]],["Acadamy",["b","a"]],["Refinery",["b","r"]],["Factory",["v","f"]],["Engineering Bay",["b","e"]],["Starport",["v","s"]],["Science Facility",["v","b"]],["Armory",["v","a"]],["Command Center",["b","c"]]]
     now:=a_tickcount
     ; type , keytosend , frequency(seconds) , autoTrainEnabled , lastAutoTrainTime , numberAutoTrained , hotkeysToTrain
-    global units:=[["scv","s",10,False,now,0,[],"Command Center"],["marine","m",10,False,now,0,[],"Barracks"],["tank","t",45,false,now,0,[],"Factory"],["wraith","w",30,false,now,0,[],"Starport"],["Medic","c",10,false,now,0,[],"Barracks"]]
+    global units:=[["scv","s",10,False,now,0,[],"Command Center"],["marine","m",10,False,now,0,[],"Barracks"],["tank","t",45,false,now,0,[],"Factory"],["wraith","w",45,false,now,0,[],"Starport"],["Medic","c",70,false,now,0,[],"Barracks"]]
     ; hotkey Assigned,type,autobuild
     global hotkeys:=[[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false],[false,"",false]]
+    global upgrades:=[["Machine Shop",["s","c"]],["Engineering Bay",["w","a"]],["Acadamy",["u","r","d"]],["Control Tower",["c","a"]],["Armory",["w","p","s","h"]],["Science",["e","i","t"]],["Covert Ops",["c","o","l","m"],["physics lab",["y","c"]]]] 
+    global lastUpgrade:=a_tickcount
     UpdateWindow()
 return
 *::
@@ -93,12 +108,14 @@ return
 a::
     train(1)
     return
-+a::
-    train(1)
-    enableAutoTraining(1)
++::
+    autoBuild:=true
+    ;train(1)
+    ;enableAutoTraining(1)
     return
-!a::
-    disableAutoTraining(1)
+-::
+    autoBuild:=false
+    ;disableAutoTraining(1)
     return 
 
 s::
@@ -135,15 +152,52 @@ callBuild()
     return
 }
 
+RunUpgrades(){
+    for upgradeIndex, upgrade in upgrades{
+
+        for hotkeyIndex, hotkey in hotkeys{
+            actualIndex:=hotkeyIndex-1
+            hotkeyName:=hotkey[2]
+            unitBuildingName:=upgrade[1]
+            If InStr( hotkeyName, unitBuildingName,false)
+            {
+                    out("upgrading  " upgrade[1] " " actualIndex " "  upgrade[1]  " == " hotkey[2] )                    
+                    sendkey(actualIndex) 
+                    for keyIndex, key in upgrade[2]{
+                        sendkey(key)
+                    }
+            }
+            else{
+                   ;out("not auto upgrading " upgrade[1] " " index " "  unit[1]  " != " hotkey[2] )
+            }            
+        }    
+    }
+    return
+
+
+}
+
 trainForAllHotkeys(index){    
         unit:=units[index]
-        for index, hotkey in unit[7]{
-            out( "building " . unit[1] " on hotkey " . hotkey)
-            sendkey(hotkey)            
-            train(index)
+        for hotkeyIndex, hotkey in hotkeys{
+            actualIndex:=hotkeyIndex-1
+            hotkeyName:=hotkey[2]
+            unitBuildingName:=unit[8]
+            If InStr( hotkeyName, unitBuildingName,false)
+            {
+                    out("Auto building " unit[1] " " actualIndex " "  unit[8]  " == " hotkey[2] )                    
+                    sendkey(actualIndex) 
+                    train(index)
+            }
+            else{
+                   ;out("not auto building " unit[1] " " index " "  unit[8]  " != " hotkey[2] )
+            }            
         }    
     return
 }
+
+
+
 train(index){
     out("training " units[index][1])
     unit:=units[index][2] 
@@ -212,8 +266,8 @@ SetCurrentHotkey()
     sleep 250
     FileRead, result, results.txt
     Out("Identified hotkey " . result )
-    hotkeys[currentHotkey][1]:= True
-    hotkeys[currentHotkey][2]:= result
+    hotkeys[currentHotkey+1][1]:= True
+    hotkeys[currentHotkey+1][2]:= result
     UpdateWindow()
 }
 return 
@@ -260,7 +314,7 @@ UpdateWindow(){
     GuiControl, GUI_Overlay:, TEXT_Timer,CurrentHotkey: %currentHotkey%
     GuiControl, GUI_Overlay:, TEXT_Timer2,SelectedBuilding: %currentBuild% %building%
 
-    auto:=""
+    auto:=autobuild
     global units
     for index, unit in units  {  
         if(unit[4]=True){ 
