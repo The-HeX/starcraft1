@@ -13,13 +13,13 @@ global now
 global units
 global hotkeys
 global AutoBuild
-
+global AutoUpgrade
 
 Gui, GUI_Overlay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4, Segoe UI Bold
-Gui, Add, Text, x140 y20 w100 h30   vTEXT_Timer2 cGray,
-Gui, Add, Text, x140 y60 w100 h30   vTEXT_Timer3 cGray,
-Gui, Add, Text, x140 y100 w100 h30   vTEXT_Timer cGray,
+Gui, Add, Text, x140 y20 w100 h30    vTEXT_Timer1 cGray,
+Gui, Add, Text, x140 y60 w100 h30    vTEXT_Timer2 cGray,Auto Build
+Gui, Add, Text, x140 y100 w100 h30   vTEXT_Timer3 cGray,
 Gui, Add, Text, x140 y140 w100 h30   vTEXT_Timer4 cGray,
 Gui, Add, Text, x140 y180 w100 h30   vTEXT_Timer5 cGray,
 Gui, Add, Text, x140 y220 w100 h30   vTEXT_Timer6 cGray,
@@ -30,10 +30,9 @@ Gui, Add, Text, x140 y380 w100 h30   vTEXT_Timer10 cGray,
 Gui, Add, Text, x140 y420 w100 h30   vTEXT_Timer11 cGray,
 Gui, Add, Text, x140 y460 w100 h30   vTEXT_Timer12 cGray,
 Gui, Add, Text, x140 y500 w100 h30   vTEXT_Timer13 cGray,
-
 Gui, Add, Text, x20 y20 w100 h30 cGray, Quick Build: 
-Gui, Add, Text, x20 y60 w100 h30  cGray, Auto Build:
-Gui, Add, Text, x20 y100 w100 h30 cGray, Selected:
+Gui, Add, Text, x20 y60 w100 h30  vTEXT_Timer14 cGray, Auto Upgrade
+Gui, Add, Text, x20 y100 w100 h30 cGray, 
 Gui, Add, Text, x20 y140 w100 h30 cGray,  Hotkey 0 =>
 Gui, Add, Text, x20 y180 w100 h30 cGray,  Hotkey 1 => 
 Gui, Add, Text, x20 y220 w100 h30 cGray,  Hotkey 2 =>
@@ -55,21 +54,31 @@ gosub reset
 
 SetTimer, AutoBuild, 1000
 
-+::
-    autoBuild:=true
-    UpdateWindow()
-    return
--::
-    autoBuild:=false
-    UpdateWindow()
-    return 
-q::
-    callbuild()
-    return 
-
 `:: 
     SetCurrentHotkey()
     return
+
+q::
+    if(AutoBuild=true){
+        autoBuild:=False
+    }else{
+        autoBuild:=true
+    }    
+    UpdateWindow()
+    return
+
+w::
+    if(AutoUpgrade=true){
+        AutoUpgrade:=False
+    }else{
+        AutoUpgrade:=true
+    }    
+    UpdateWindow()
+    return
+
+e::
+    callbuild()
+    return 
 
 tab::
     NextHotkey()
@@ -83,10 +92,8 @@ tab::
     gosub reset
     return 
 
-
-
 AutoBuild:
-if(autobuild=true){
+if(AutoBuild=true){
     waitTime:=4
     if((a_tickcount - lastAction)/1000> waitTime){
      
@@ -103,21 +110,25 @@ if(autobuild=true){
                 }
             }
         }
-
+          UpdateWindow()
+    }
+}
+if(AutoUpgrade=true){
+    waitTime:=4
+    if((a_tickcount - lastAction)/1000> waitTime){
         ; ====================================================================
         ; upgrade buildings
          diff:= (a_tickcount - lastUpgrade)/1000
          ; try to upgrade every 45 seconds
          if(diff>45){  
-            RunUpgrades()
-         }
-
-          UpdateWindow()
+            RunUpgrades()            
+         }         
     }
 }
 return
 
 reset:
+    global AutoUpgrade:=false
     global autoBuild:=false
     global maxHotkey:=0
     global lastAction:=a_tickcount
@@ -143,14 +154,14 @@ reset:
     
     ; type , key sequence , frequency(seconds) , autoTrainEnabled , lastAutoTrainTime , numberAutoTrained , hotkeysToTrain
     global UNIT_TYPE=1
-    global units:=[      ["scv"             ,"s",9     ,False,now,0,[],"Command Center"]
+    global units:=[      ["scv"             ,"s",      ,False,now,0,[],"Command Center"]
+                        ,["tank"            ,"t",20    ,false,now,0,[],"Factory"]
+                        ,["Medic"           ,"c",90    ,false,now,0,[],"Barracks"]
+                        ,["Ghost"           ,"g",50    ,false,now,0,[],"Barracks"]
                         ,["marine"          ,"m",9     ,False,now,0,[],"Barracks"]
-                        ,["tank"            ,"t",20     ,false,now,0,[],"Factory"]
-                        ,["wraith"          ,"w",20     ,false,now,0,[],"Starport"]
-                        ,["Medic"           ,"c",90     ,false,now,0,[],"Barracks"]
-                        ,["Ghost"           ,"g",50     ,false,now,0,[],"Barracks"]
-                        ,["Scienve Vessel"  ,"v",360     ,false,now,0,[],"Starport"]
-                        ,["battle cruiser"  ,"b",60     ,false,now,0,[],"Starport"]]
+                        ,["Scienve Vessel"  ,"v",360   ,false,now,0,[],"Starport"]
+                        ,["wraith"          ,"w",20    ,false,now,0,[],"Starport"]
+                        ,["battle cruiser"  ,"b",60    ,false,now,0,[],"Starport"]]
     
                         ; Assigned  ,Building Name      ,autobuild
     global hotkeys:=[    [false     ,""                 ,false] ;0
@@ -351,22 +362,39 @@ return
 
 
 UpdateWindow(){
-    building:=builds[currentBuild][1]      
-    GuiControl, GUI_Overlay:, TEXT_Timer2,  %building%
-    Gui, Font, cYellow Bold, Verdana
-    GuiControl, Font, TEXT_Timer2
+global AutoUpgrade
+Global TEXT_Timer2
+Global TEXT_Timer14
 
-    auto:=autobuild    
-    GuiControl, GUI_Overlay:,  TEXT_Timer3 , %auto% 
+    building:=builds[currentBuild][1]      
+    GuiControl, GUI_Overlay:, TEXT_Timer1,  %building%
+    Gui, Font, cYellow Bold, Verdana
+    GuiControl, Font, TEXT_Timer1
+
     
-    if(autobuild=true){
+    GuiControl, GUI_Overlay:,  TEXT_Timer2 , Auto Build    
+    if(autobuild=TRUE){        
         Gui, Font, cYellow Bold, Verdana
-        GuiControl, Font, TEXT_Timer3
+        GuiControl, Font, TEXT_Timer2
+    }
+    
+    ;GuiControl, GUI_Overlay:,TEXT_Timer14, Auto Upgrade    
+    if(AutoUpgrade=TRUE) {
+        Gui, Font, cYellow Bold, Verdana
+        GuiControl, Font, TEXT_Timer14
     }
     
     GuiControl, GUI_Overlay:, TEXT_Timer, %currentHotkey%
+    Gui, Font, cYellow
+    GuiControl, Font, TEXT_Timer        
+        
     hotkey:=hotkeys[1][2]
     GuiControl, GUI_Overlay:, TEXT_Timer4, %hotkey%
+    if(currentHotkey=0){
+        Gui, Font, cYellow Bold, Verdana
+        GuiControl, Font, TEXT_Timer4
+        
+    }
     hotkey:=hotkeys[2][2]
     GuiControl, GUI_Overlay:, TEXT_Timer5, %hotkey%
     hotkey:=hotkeys[3][2]
