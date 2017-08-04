@@ -1,4 +1,4 @@
-#IfWinActive Brood War
+;#IfWinActive Brood War
 #InstallKeybdHook
 #InstallMouseHook
 #SingleInstance, force
@@ -16,33 +16,34 @@ global AutoBuild
 global AutoUpgrade
 
 Gui, GUI_Overlay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
-Gui, Font, s10 q4, Segoe UI Bold
-Gui, Add, Text, x140 y20 w100 h30    vTEXT_Timer1 cGray,
-Gui, Add, Text, x140 y60 w100 h30    vTEXT_Timer2 cGray,Auto Build
-Gui, Add, Text, x140 y100 w100 h30   vTEXT_Timer3 cGray,
-Gui, Add, Text, x140 y140 w100 h30   vTEXT_Timer4 cGray,
-Gui, Add, Text, x140 y180 w100 h30   vTEXT_Timer5 cGray,
-Gui, Add, Text, x140 y220 w100 h30   vTEXT_Timer6 cGray,
-Gui, Add, Text, x140 y260 w100 h30   vTEXT_Timer7 cGray,
-Gui, Add, Text, x140 y300 w100 h30   vTEXT_Timer8 cGray,
-Gui, Add, Text, x140 y340 w100 h30   vTEXT_Timer9 cGray,
-Gui, Add, Text, x140 y380 w100 h30   vTEXT_Timer10 cGray,
-Gui, Add, Text, x140 y420 w100 h30   vTEXT_Timer11 cGray,
-Gui, Add, Text, x140 y460 w100 h30   vTEXT_Timer12 cGray,
-Gui, Add, Text, x140 y500 w100 h30   vTEXT_Timer13 cGray,
-Gui, Add, Text, x20 y20 w100 h30 cGray, Quick Build: 
-Gui, Add, Text, x20 y60 w100 h30  vTEXT_Timer14 cGray, Auto Upgrade
-Gui, Add, Text, x20 y100 w100 h30 cGray, 
-Gui, Add, Text, x20 y140 w100 h30 cGray,  Hotkey 0 =>
-Gui, Add, Text, x20 y180 w100 h30 cGray,  Hotkey 1 => 
-Gui, Add, Text, x20 y220 w100 h30 cGray,  Hotkey 2 =>
-Gui, Add, Text, x20 y260 w100 h30 cGray,  Hotkey 3 =>
-Gui, Add, Text, x20 y300 w100 h30 cGray,  Hotkey 4 =>
-Gui, Add, Text, x20 y340 w100 h30 cGray,  Hotkey 5 => 
-Gui, Add, Text, x20 y380 w100 h30  cGray, Hotkey 6 =>  
-Gui, Add, Text, x20 y420 w100 h30  cGray, Hotkey 7 => 
-Gui, Add, Text, x20 y460 w100 h30  cGray, Hotkey 8 => 
-Gui, Add, Text, x20 y500 w100 h30  cGray, Hotkey 9 =>
+Gui, Font, s10 q4 cGray, Segoe UI Bold
+Gui, Add, Text, x20 y20 w100 h30  vlabel1 ,Build Selection:
+Gui, Add, Text, x20 y60 w100 h30  vlabel2 ,
+Gui, Add, Text, x20 y100 w100 h30 vlabel3 ,
+Gui, Add, Text, x20 y140 w100 h30 vlabel4 , Hotkey 0 =>
+Gui, Add, Text, x20 y180 w100 h30 vlabel5 , Hotkey 1 => 
+Gui, Add, Text, x20 y220 w100 h30 vlabel6 , Hotkey 2 =>
+Gui, Add, Text, x20 y260 w100 h30 vlabel7 , Hotkey 3 =>
+Gui, Add, Text, x20 y300 w100 h30 vlabel8 , Hotkey 4 =>
+Gui, Add, Text, x20 y340 w100 h30 vlabel9 , Hotkey 5 => 
+Gui, Add, Text, x20 y380 w100 h30 vlabel10, Hotkey 6 =>  
+Gui, Add, Text, x20 y420 w100 h30 vlabel11, Hotkey 7 => 
+Gui, Add, Text, x20 y460 w100 h30 vlabel12, Hotkey 8 => 
+Gui, Add, Text, x20 y500 w100 h30 vlabel13, Hotkey 9 =>
+
+Gui, Add, Text, x140 y20 w100 h30   vTEXT1 ,
+Gui, Add, Text, x140 y60 w100 h30   vTEXT2 ,
+Gui, Add, Text, x140 y100 w100 h30  vTEXT3 ,
+Gui, Add, Text, x140 y140 w100 h30  vTEXT4 ,
+Gui, Add, Text, x140 y180 w100 h30  vTEXT5 ,
+Gui, Add, Text, x140 y220 w100 h30  vTEXT6 ,
+Gui, Add, Text, x140 y260 w100 h30  vTEXT7 ,
+Gui, Add, Text, x140 y300 w100 h30  vTEXT8 ,
+Gui, Add, Text, x140 y340 w100 h30  vTEXT9 ,
+Gui, Add, Text, x140 y380 w100 h30  vTEXT10,
+Gui, Add, Text, x140 y420 w100 h30  vTEXT11,
+Gui, Add, Text, x140 y460 w100 h30  vTEXT12,
+Gui, Add, Text, x140 y500 w100 h30  vTEXT13,
 
 Gui, Color, 000000
 WinSet, Transparent, 220
@@ -363,56 +364,67 @@ return
 
 UpdateWindow(){
 global AutoUpgrade
-Global TEXT_Timer2
-Global TEXT_Timer14
+global autoBuild
+global currentHotkey
+
+    
+    Gui, Font,% AutoUpgrade=TRUE ? "cYellow":"cGray"
+    GuiControl,,TEXT2, Auto Upgrade
+    GuiControl, Font, TEXT2
+    Gui show
 
     building:=builds[currentBuild][1]      
-    GuiControl, GUI_Overlay:, TEXT_Timer1,  %building%
+    
+    GuiControl, GUI_Overlay:, TEXT1,  %building%    
     Gui, Font, cYellow Bold, Verdana
-    GuiControl, Font, TEXT_Timer1
+    GuiControl, Font, TEXT1
 
     
-    GuiControl, GUI_Overlay:,  TEXT_Timer2 , Auto Build    
+    GuiControl, GUI_Overlay:,  label2 , Auto Build    
     if(autobuild=TRUE){        
+        out("setting label2 to yellow")
         Gui, Font, cYellow Bold, Verdana
-        GuiControl, Font, TEXT_Timer2
+        GuiControl, Font, label2
+        Gui Show
     }
     
-    ;GuiControl, GUI_Overlay:,TEXT_Timer14, Auto Upgrade    
-    if(AutoUpgrade=TRUE) {
-        Gui, Font, cYellow Bold, Verdana
-        GuiControl, Font, TEXT_Timer14
-    }
     
-    GuiControl, GUI_Overlay:, TEXT_Timer, %currentHotkey%
-    Gui, Font, cYellow
-    GuiControl, Font, TEXT_Timer        
         
     hotkey:=hotkeys[1][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer4, %hotkey%
+    GuiControl, GUI_Overlay:, TEXT4, %hotkey%
+    
     if(currentHotkey=0){
         Gui, Font, cYellow Bold, Verdana
-        GuiControl, Font, TEXT_Timer4
-        
+        GuiControl, Font, label4        
+        GuiControl, Font, TEXT4        
+        Gui Show
     }
+    else{
+        Gui, Font, cGray Bold, Verdana
+        GuiControl, Font, label4        
+        GuiControl, Font, TEXT4        
+        Gui Show
+    }
+
     hotkey:=hotkeys[2][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer5, %hotkey%
+    GuiControl, GUI_Overlay:, TEXT5, %hotkey%
     hotkey:=hotkeys[3][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer6, %hotkey%
+    GuiControl, GUI_Overlay:, TEXT6, %hotkey%
     hotkey:=hotkeys[4][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer7, %hotkey%
+    GuiControl, GUI_Overlay:, TEXT7, %hotkey%
    hotkey:=hotkeys[5][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer8, %hotkey%
+    GuiControl, GUI_Overlay:, TEXT8, %hotkey%
    hotkey:=hotkeys[6][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer9, %hotkey%
+    GuiControl, GUI_Overlay:, TEXT9, %hotkey%
    hotkey:=hotkeys[7][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer10,  %hotkey%
+    GuiControl, GUI_Overlay:, TEXT10,  %hotkey%
    hotkey:=hotkeys[8][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer11,  %hotkey%
+    GuiControl, GUI_Overlay:, TEXT11,  %hotkey%
    hotkey:=hotkeys[9][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer12,  %hotkey%
+    GuiControl, GUI_Overlay:, TEXT12,  %hotkey%
    hotkey:=hotkeys[10][2]
-    GuiControl, GUI_Overlay:, TEXT_Timer13,  %hotkey%
+    GuiControl, GUI_Overlay:, TEXT13,  %hotkey%
+    Gui Show
    return
 }
 
