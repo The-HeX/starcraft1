@@ -1,4 +1,4 @@
-;#IfWinActive Brood War
+#IfWinActive Brood War
 #InstallKeybdHook
 #InstallMouseHook
 #SingleInstance, force
@@ -15,10 +15,10 @@ global hotkeys
 global AutoBuild
 global AutoUpgrade
 
-Gui, GUI_Overlay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
+Gui, HeadsUpDisplay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4 cGray, Segoe UI Bold
 Gui, Add, Text, x20 y20 w100 h30  vlabel1 ,Build Selection:
-Gui, Add, Text, x20 y60 w100 h30  vlabel2 ,
+Gui, Add, Text, x20 y60 w100 h30  vlabel2 ,Build
 Gui, Add, Text, x20 y100 w100 h30 vlabel3 ,
 Gui, Add, Text, x20 y140 w100 h30 vlabel4 , Hotkey 0 =>
 Gui, Add, Text, x20 y180 w100 h30 vlabel5 , Hotkey 1 => 
@@ -32,7 +32,7 @@ Gui, Add, Text, x20 y460 w100 h30 vlabel12, Hotkey 8 =>
 Gui, Add, Text, x20 y500 w100 h30 vlabel13, Hotkey 9 =>
 
 Gui, Add, Text, x140 y20 w100 h30   vTEXT1 ,
-Gui, Add, Text, x140 y60 w100 h30   vTEXT2 ,
+Gui, Add, Text, x140 y60 w100 h30   vTEXT2 ,Upgrade
 Gui, Add, Text, x140 y100 w100 h30  vTEXT3 ,
 Gui, Add, Text, x140 y140 w100 h30  vTEXT4 ,
 Gui, Add, Text, x140 y180 w100 h30  vTEXT5 ,
@@ -49,7 +49,7 @@ Gui, Color, 000000
 WinSet, Transparent, 220
 Winset, AlwaysOnTop, on
 Gui, Show, Hide, Overlay   
-Gui, GUI_Overlay:Show, NoActivate, starcraft 
+Gui, HeadsUpDisplay:Show, NoActivate, starcraft 
 
 gosub reset
 
@@ -59,7 +59,7 @@ SetTimer, AutoBuild, 1000
     SetCurrentHotkey()
     return
 
-q::
+w::
     if(AutoBuild=true){
         autoBuild:=False
     }else{
@@ -68,7 +68,7 @@ q::
     UpdateWindow()
     return
 
-w::
+e::
     if(AutoUpgrade=true){
         AutoUpgrade:=False
     }else{
@@ -77,7 +77,7 @@ w::
     UpdateWindow()
     return
 
-e::
+q::
     callbuild()
     return 
 
@@ -134,7 +134,7 @@ reset:
     global maxHotkey:=0
     global lastAction:=a_tickcount
     global lastBuild:=a_tickcount
-    global currentHotkey:=0
+    global currentHotkey:=1
     global currentBuild:=1
     
                         ;Building Name      ,key sequence
@@ -147,7 +147,7 @@ reset:
                         ,["Factory"         ,["v","f"]]
                         ,["Engineering Bay" ,["b","e"]]
                         ,["Starport"        ,["v","s"]]
-                        ,["Science Facility",["v","b"]]
+                        ,["Science Facility",["v","i"]]
                         ,["Armory"          ,["v","a"]]
                         ,["Command Center"  ,["b","c"]]]
     
@@ -164,17 +164,17 @@ reset:
                         ,["wraith"          ,"w",20    ,false,now,0,[],"Starport"]
                         ,["battle cruiser"  ,"b",60    ,false,now,0,[],"Starport"]]
     
-                        ; Assigned  ,Building Name      ,autobuild
-    global hotkeys:=[    [false     ,""                 ,false] ;0
-                        ,[false     ,""                 ,false] ;1
-                        ,[false     ,""                 ,false] ;2
-                        ,[false     ,""                 ,false] ;3
-                        ,[false     ,""                 ,false] ;4
-                        ,[false     ,""                 ,false] ;5
-                        ,[false     ,""                 ,false] ;6 
-                        ,[false     ,""                 ,false] ;7
-                        ,[false     ,""                 ,false] ;8
-                        ,[false     ,""                 ,false]] ;9
+                        ; Assigned  ,Building Name  , autobuild , unit index to build (array of unit index) , upgrade index
+    global hotkeys:=[    [false     ,""                 ,false,[],[]] ;
+                        ,[false     ,""                 ,false,[],[]] ;
+                        ,[false     ,""                 ,false,[],[]] ;
+                        ,[false     ,""                 ,false,[],[]] ;
+                        ,[false     ,""                 ,false,[],[]] ;
+                        ,[false     ,""                 ,false,[],[]] ;
+                        ,[false     ,""                 ,false,[],[]] ;6
+                        ,[false     ,""                 ,false,[],[]] ;7
+                        ,[false     ,""                 ,false,[],[]] ;8
+                        ,[false     ,""                 ,false,[],[]]] ;9
 
                          ;Building Name     , upgrade keys
     global upgrades:= [  ["Machine Shop"    ,["s","c"]]
@@ -307,10 +307,6 @@ PrevBuild(){
 
 SetCurrentHotkey()
 {    
-    currentHotkey+=1
-    if(currentHotkey> maxHotkey){
-        maxHotkey:=currentHotkey
-    }
     out("SetCurrentHotkey " currentHotkey)
     send ^%currentHotkey%
     send +{PrintScreen}
@@ -322,8 +318,53 @@ SetCurrentHotkey()
     hotkeys[currentHotkey+1][1]:= True
     hotkeys[currentHotkey+1][2]:= result
     UpdateWindow()
+
+    currentHotkey+=1
+    if(currentHotkey> maxHotkey){
+        maxHotkey:=currentHotkey
+    }
+    updateHotkeyUnitMappings()
+    dumpHotKeys()
 }
 return 
+
+dumpHotKeys(){
+    for hotkeyIndex, hotkey in hotkeys{
+        out(hotkey[1] hotkey[2] hotkey[3] hotkey[4] hotkey[5])        
+        
+    }                        
+}
+
+updateHotkeyUnitMappings(){
+        
+        for hotkeyIndex, hotkey in hotkeys{
+            actualIndex:=hotkeyIndex-1
+            hotkeyName:=hotkey[2]
+            if(strlen(hotkeyName)>0){
+                for unitIndex, unit in units
+                {
+                    unitBuildingName:=units[8]
+                    If InStr( hotkeyName, unitBuildingName,false)
+                    {
+                        hotkeys[actualIndex][4].Add(unitIndex)
+                    }
+                }
+                for upgradeIndex, upgrade in upgrades
+                {
+                    upgradeBuildingName:=upgrades[1]
+                    If InStr( hotkeyName, upgradeBuildingName,false)
+                    {
+                        hotkeys[actualIndex][5].Add(unitIndex)
+                    }
+                }                
+            }
+            else{
+                hotkeys[actualIndex][4]:=[]
+                hotkeys[actualIndex][5]:=[]
+            }                        
+        }    
+    return
+}
 
 PrevHotkey(){    
     currentHotkey:=currentHotkey-1
@@ -360,71 +401,90 @@ Out(message){
 return
 
 
-
-
 UpdateWindow(){
-global AutoUpgrade
-global autoBuild
-global currentHotkey
+    global AutoUpgrade
+    global autoBuild
+    global currentHotkey
+    global currentBuild
 
-    
-    Gui, Font,% AutoUpgrade=TRUE ? "cYellow":"cGray"
-    GuiControl,,TEXT2, Auto Upgrade
-    GuiControl, Font, TEXT2
-    Gui show
+    building:=builds[currentBuild][1]
 
-    building:=builds[currentBuild][1]      
-    
-    GuiControl, GUI_Overlay:, TEXT1,  %building%    
-    Gui, Font, cYellow Bold, Verdana
-    GuiControl, Font, TEXT1
+    GuiControl,HeadsUpDisplay:, TEXT1,  %building%    
+    Gui, HeadsUpDisplay:Font, cYellow Bold, Verdana
+    GuiControl, HeadsUpDisplay:Font, TEXT1
+   
+    Gui, HeadsUpDisplay:Font,% AutoBuild=TRUE ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label2
 
-    
-    GuiControl, GUI_Overlay:,  label2 , Auto Build    
-    if(autobuild=TRUE){        
-        out("setting label2 to yellow")
-        Gui, Font, cYellow Bold, Verdana
-        GuiControl, Font, label2
-        Gui Show
-    }
-    
-    
-        
+    Gui, HeadsUpDisplay:Font,% AutoUpgrade=TRUE ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, TEXT2
+            
     hotkey:=hotkeys[1][2]
-    GuiControl, GUI_Overlay:, TEXT4, %hotkey%
+    GuiControl,HeadsUpDisplay: , TEXT4, %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=0 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label4        
+    GuiControl, HeadsUpDisplay:Font, TEXT4        
     
-    if(currentHotkey=0){
-        Gui, Font, cYellow Bold, Verdana
-        GuiControl, Font, label4        
-        GuiControl, Font, TEXT4        
-        Gui Show
-    }
-    else{
-        Gui, Font, cGray Bold, Verdana
-        GuiControl, Font, label4        
-        GuiControl, Font, TEXT4        
-        Gui Show
-    }
 
     hotkey:=hotkeys[2][2]
-    GuiControl, GUI_Overlay:, TEXT5, %hotkey%
+    GuiControl,HeadsUpDisplay: , TEXT5, %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=1 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label5        
+    GuiControl, HeadsUpDisplay:Font, TEXT5        
+
+
     hotkey:=hotkeys[3][2]
-    GuiControl, GUI_Overlay:, TEXT6, %hotkey%
+    GuiControl,HeadsUpDisplay: , TEXT6, %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=2 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label6        
+    GuiControl, HeadsUpDisplay:Font, TEXT6        
+
     hotkey:=hotkeys[4][2]
-    GuiControl, GUI_Overlay:, TEXT7, %hotkey%
-   hotkey:=hotkeys[5][2]
-    GuiControl, GUI_Overlay:, TEXT8, %hotkey%
-   hotkey:=hotkeys[6][2]
-    GuiControl, GUI_Overlay:, TEXT9, %hotkey%
-   hotkey:=hotkeys[7][2]
-    GuiControl, GUI_Overlay:, TEXT10,  %hotkey%
-   hotkey:=hotkeys[8][2]
-    GuiControl, GUI_Overlay:, TEXT11,  %hotkey%
-   hotkey:=hotkeys[9][2]
-    GuiControl, GUI_Overlay:, TEXT12,  %hotkey%
-   hotkey:=hotkeys[10][2]
-    GuiControl, GUI_Overlay:, TEXT13,  %hotkey%
-    Gui Show
+    GuiControl, HeadsUpDisplay:, TEXT7, %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=3 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label7        
+    GuiControl, HeadsUpDisplay:Font, TEXT7        
+
+    hotkey:=hotkeys[5][2]
+    GuiControl,HeadsUpDisplay: , TEXT8, %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=4 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label8        
+    GuiControl, HeadsUpDisplay:Font, TEXT8        
+    
+    hotkey:=hotkeys[6][2]
+    GuiControl, HeadsUpDisplay:, TEXT9, %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=5 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label9        
+    GuiControl, HeadsUpDisplay:Font, TEXT9        
+    
+
+    hotkey:=hotkeys[7][2]
+    GuiControl,HeadsUpDisplay: , TEXT10,  %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=6 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label10        
+    GuiControl, HeadsUpDisplay:Font, TEXT10        
+
+
+    hotkey:=hotkeys[8][2]
+    GuiControl,HeadsUpDisplay: , TEXT11,  %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=7 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label11        
+    GuiControl, HeadsUpDisplay:Font, TEXT11        
+    
+    hotkey:=hotkeys[9][2]
+    GuiControl,HeadsUpDisplay: , TEXT12,  %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=8 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label12 
+    GuiControl, HeadsUpDisplay:Font, TEXT12        
+    
+    hotkey:=hotkeys[10][2]
+    GuiControl, HeadsUpDisplay:, TEXT13,  %hotkey%
+    Gui, HeadsUpDisplay:Font,% currentHotkey=9 ? "cYellow":"cGray"
+    GuiControl, HeadsUpDisplay:Font, label13        
+    GuiControl, HeadsUpDisplay:Font, TEXT13        
+        
+    ;Gui, HeadsUpDisplay:Hide 
+    Gui, HeadsUpDisplay:Show, NoActivate, starcraft 
    return
 }
 
