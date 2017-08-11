@@ -45,6 +45,22 @@ Gui, Add, Text, x140 y420 w100 h30  vTEXT11,
 Gui, Add, Text, x140 y460 w100 h30  vTEXT12,
 Gui, Add, Text, x140 y500 w100 h30  vTEXT13,
 
+
+Gui, Add, Text, x260 y20 w100 h30   vunitLabel1 ,
+Gui, Add, Text, x260 y60 w100 h30   vunitLabel2 ,
+Gui, Add, Text, x260 y100 w100 h30  vunitLabel3 ,
+Gui, Add, Text, x260 y140 w100 h30  vunitLabel4 ,
+Gui, Add, Text, x260 y180 w100 h30  vunitLabel5 ,
+Gui, Add, Text, x260 y220 w100 h30  vunitLabel6 ,
+Gui, Add, Text, x260 y260 w100 h30  vunitLabel7 ,
+Gui, Add, Text, x260 y300 w100 h30  vunitLabel8 ,
+Gui, Add, Text, x260 y340 w100 h30  vunitLabel9 ,
+Gui, Add, Text, x260 y380 w100 h30  vunitLabel10,
+Gui, Add, Text, x260 y420 w100 h30  vunitLabel11,
+Gui, Add, Text, x260 y460 w100 h30  vunitLabel12,
+Gui, Add, Text, x260 y500 w100 h30  vunitLabel13,
+
+
 Gui, Color, 000000
 WinSet, Transparent, 220
 Winset, AlwaysOnTop, on
@@ -93,6 +109,45 @@ tab::
     gosub reset
     return 
 
+s::
+    units[1][4]:=!units[1][4]
+    UpdateWindow()
+    return 
+
+t::
+    units[2][4]:=!units[2][4]
+    UpdateWindow()
+    return 
+c::
+    units[3][4]:=!units[3][4]
+    UpdateWindow()
+    return 
+
+g::
+    units[4][4]:=!units[4][4]
+    UpdateWindow()
+    return 
+
+m::
+    units[5][4]:=!units[5][4]
+    UpdateWindow()
+    return 
+
+v::
+    units[6][4]:=!units[6][4]
+    UpdateWindow()
+    return 
+
+h::
+    units[7][4]:=!units[7][4]
+    UpdateWindow()
+    return 
+
+b::
+    units[8][4]:=!units[8][4]
+    UpdateWindow()
+    return 
+
 AutoBuild:
 if(AutoBuild=true){
     waitTime:=4
@@ -101,13 +156,15 @@ if(AutoBuild=true){
         ; train units ============================================================
         global units
         for index, unit in units  {  
-            diff:= (a_tickcount - unit[5])/1000
-            if(diff > unit[3]){
-                if((a_tickcount - lastAction)/1000> waitTime){
-                    out("auto build "unit[1] " after time period "unit[3])
-                    unit[5]:=a_tickcount
-                    unit[6] += 1
-                    trainForAllHotkeys(index)                   
+            if(unit[4]=true){
+                diff:= (a_tickcount - unit[5])/1000
+                if(diff > unit[3]){
+                    if((a_tickcount - lastAction)/1000> waitTime){
+                        out("auto build "unit[1] " after time period "unit[3])
+                        unit[5]:=a_tickcount
+                        unit[6] += 1
+                        trainForAllHotkeys(index)                   
+                    }
                 }
             }
         }
@@ -121,7 +178,7 @@ if(AutoUpgrade=true){
         ; upgrade buildings
          diff:= (a_tickcount - lastUpgrade)/1000
          ; try to upgrade every 45 seconds
-         if(diff>45){  
+         if(diff>60){  
             RunUpgrades()            
          }         
     }
@@ -155,14 +212,14 @@ reset:
     
     ; type , key sequence , frequency(seconds) , autoTrainEnabled , lastAutoTrainTime , numberAutoTrained , hotkeysToTrain
     global UNIT_TYPE=1
-    global units:=[      ["scv"             ,"s",      ,False,now,0,[],"Command Center"]
-                        ,["tank"            ,"t",20    ,false,now,0,[],"Factory"]
-                        ,["Medic"           ,"c",90    ,false,now,0,[],"Barracks"]
-                        ,["Ghost"           ,"g",50    ,false,now,0,[],"Barracks"]
-                        ,["marine"          ,"m",9     ,False,now,0,[],"Barracks"]
-                        ,["Scienve Vessel"  ,"v",360   ,false,now,0,[],"Starport"]
-                        ,["wraith"          ,"w",20    ,false,now,0,[],"Starport"]
-                        ,["battle cruiser"  ,"b",60    ,false,now,0,[],"Starport"]]
+    global units:=[      ["Scv"             ,"s",10    ,true,now,0,[],"Command Center"]
+                        ,["Tank"            ,"t",20    ,true,now,0,[],"Factory"]
+                        ,["mediC"           ,"c",90    ,true,now,0,[],"Barracks"]
+                        ,["Ghost"           ,"g",60    ,true,now,0,[],"Barracks"]
+                        ,["Marine"          ,"m",9     ,true,now,0,[],"Barracks"]
+                        ,["scienve Vessel"  ,"v",360   ,true,now,0,[],"Starport"]
+                        ,["wraitH"          ,"w",20    ,true,now,0,[],"Starport"]
+                        ,["Battle cruiser"  ,"b",60    ,true,now,0,[],"Starport"]]
     
                         ; Assigned  ,Building Name  , autobuild , unit index to build (array of unit index) , upgrade index
     global hotkeys:=[    [false     ,""                 ,false,[],[]] ;
@@ -343,10 +400,12 @@ updateHotkeyUnitMappings(){
             if(strlen(hotkeyName)>0){
                 for unitIndex, unit in units
                 {
-                    unitBuildingName:=units[8]
-                    If InStr( hotkeyName, unitBuildingName,false)
-                    {
-                        hotkeys[actualIndex][4].Add(unitIndex)
+                    if(unit[4]=true){
+                        unitBuildingName:=unit[8]
+                        If InStr( hotkeyName, unitBuildingName,false)
+                        {
+                            hotkeys[actualIndex][4].Add(unitIndex)
+                        }
                     }
                 }
                 for upgradeIndex, upgrade in upgrades
@@ -482,6 +541,16 @@ UpdateWindow(){
     Gui, HeadsUpDisplay:Font,% currentHotkey=9 ? "cYellow":"cGray"
     GuiControl, HeadsUpDisplay:Font, label13        
     GuiControl, HeadsUpDisplay:Font, TEXT13        
+
+    for unitIndex, unit in units
+    {
+        name := unit[1]
+        unitEnabled := unit[4]
+        labelname := "unitLabel" . unitIndex
+        Gui, HeadsUpDisplay:Font,% unitEnabled=true ? "cYellow":"cGray"
+        GuiControl,HeadsUpDisplay: , %labelname%,  %name%       
+        GuiControl, HeadsUpDisplay:Font, %labelname%        
+    }
         
     ;Gui, HeadsUpDisplay:Hide 
     Gui, HeadsUpDisplay:Show, NoActivate, starcraft 
