@@ -14,6 +14,7 @@ global units
 global hotkeys
 global AutoBuild
 global AutoUpgrade
+global cheatSent
 
 Gui, HeadsUpDisplay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4 cGray, Segoe UI Bold
@@ -123,30 +124,41 @@ c::
     UpdateWindow()
     return 
 
-g::
+*g::
     units[4][4]:=!units[4][4]
     UpdateWindow()
     return 
 
-m::
+*m::
     units[5][4]:=!units[5][4]
     UpdateWindow()
     return 
 
-v::
+*v::
     units[6][4]:=!units[6][4]
     UpdateWindow()
     return 
 
-h::
+*h::
     units[7][4]:=!units[7][4]
     UpdateWindow()
     return 
 
-b::
+*b::
     units[8][4]:=!units[8][4]
     UpdateWindow()
     return 
+^c::
+    if(cheatSent=false){
+        send {enter}Show me the money{enter}medieval man{enter}modify the phase variance{enter}war aint what it used to be{enter}food for thought{enter}    
+        cheatSent:=true
+    }
+    else{
+        send {enter}Show me the money{enter}
+    }
+    
+    return
+
 
 AutoBuild:
 if(AutoBuild=true){
@@ -193,7 +205,7 @@ reset:
     global lastBuild:=a_tickcount
     global currentHotkey:=1
     global currentBuild:=1
-    
+    global cheatSent:=false    
                         ;Building Name      ,key sequence
     global builds:= [    ["Depot"           ,["b","s"]]
                         ,["Turret"          ,["b","t"]]
