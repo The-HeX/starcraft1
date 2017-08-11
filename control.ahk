@@ -15,6 +15,8 @@ global hotkeys
 global AutoBuild
 global AutoUpgrade
 global cheatSent
+global lastCheatSent
+global mapPoints
 
 Gui, HeadsUpDisplay:New, +AlwaysOnTop +hwndGUI_Overlay_hwnd
 Gui, Font, s10 q4 cGray, Segoe UI Bold
@@ -110,45 +112,49 @@ tab::
     gosub reset
     return 
 
-s::
+~s::
     units[1][4]:=!units[1][4]
     UpdateWindow()
     return 
 
-t::
+~t::
     units[2][4]:=!units[2][4]
     UpdateWindow()
     return 
-c::
+~c::
     units[3][4]:=!units[3][4]
     UpdateWindow()
     return 
 
-*g::
+~g::
     units[4][4]:=!units[4][4]
     UpdateWindow()
     return 
 
-*m::
+~m::
     units[5][4]:=!units[5][4]
     UpdateWindow()
     return 
 
-*v::
+~v::
     units[6][4]:=!units[6][4]
     UpdateWindow()
     return 
 
-*h::
+~h::
     units[7][4]:=!units[7][4]
     UpdateWindow()
     return 
 
-*b::
+~b::
     units[8][4]:=!units[8][4]
     UpdateWindow()
     return 
 ^c::
+    sendCheat()
+    return
+
+sendCheat(){
     if(cheatSent=false){
         send {enter}Show me the money{enter}medieval man{enter}modify the phase variance{enter}war aint what it used to be{enter}food for thought{enter}    
         cheatSent:=true
@@ -156,9 +162,9 @@ c::
     else{
         send {enter}Show me the money{enter}
     }
-    
-    return
-
+    lastCheatSent:=a_tickcount
+return
+}
 
 AutoBuild:
 if(AutoBuild=true){
@@ -190,9 +196,18 @@ if(AutoUpgrade=true){
         ; upgrade buildings
          diff:= (a_tickcount - lastUpgrade)/1000
          ; try to upgrade every 45 seconds
-         if(diff>60){  
+         if(diff>90){  
             RunUpgrades()            
          }         
+    }
+}
+if(cheatSent=true){
+    waitTime:=4
+    if((a_tickcount - lastAction)/1000> waitTime){
+         diff:= (a_tickcount - lastCheatSent)/1000
+         if(diff>90){  
+            sendCheat()
+         }                 
     }
 }
 return
@@ -203,6 +218,7 @@ reset:
     global maxHotkey:=0
     global lastAction:=a_tickcount
     global lastBuild:=a_tickcount
+    global lastCheatSent:=a_tickcount
     global currentHotkey:=1
     global currentBuild:=1
     global cheatSent:=false    
@@ -226,9 +242,9 @@ reset:
     global UNIT_TYPE=1
     global units:=[      ["Scv"             ,"s",10    ,true,now,0,[],"Command Center"]
                         ,["Tank"            ,"t",20    ,true,now,0,[],"Factory"]
-                        ,["mediC"           ,"c",90    ,true,now,0,[],"Barracks"]
-                        ,["Ghost"           ,"g",60    ,true,now,0,[],"Barracks"]
-                        ,["Marine"          ,"m",9     ,true,now,0,[],"Barracks"]
+                        ,["mediC"           ,"c",100   ,true,now,0,[],"Barracks"]
+                        ,["Ghost"           ,"g",90    ,true,now,0,[],"Barracks"]
+                        ,["Marine"          ,"m",10     ,true,now,0,[],"Barracks"]
                         ,["scienve Vessel"  ,"v",360   ,true,now,0,[],"Starport"]
                         ,["wraitH"          ,"w",20    ,true,now,0,[],"Starport"]
                         ,["Battle cruiser"  ,"b",60    ,true,now,0,[],"Starport"]]
@@ -255,6 +271,9 @@ reset:
                         ,["Covert Ops"      ,["c","o","l","m"]
                         ,["physics lab"     ,["y","c"]]] ] 
     
+    global mapPoints:=[  ["Rally",0,0]
+                        ,["Attack",0,0]]
+
     global lastUpgrade:=a_tickcount
     UpdateWindow()
 return
@@ -269,6 +288,20 @@ return
 
 ~rbutton::
     lastAction:=a_tickcount
+return
+
+^lbutton::
+    MouseGetPos, xpos, ypos 
+    out( The cursor is at X%xpos% Y%ypos%. )
+    mapPoints[2][2]:=xpos
+    mapPoints[2][3]:=ypos
+return
+
+$lbutton::
+    MouseGetPos, xpos, ypos 
+    out( The cursor is at X%xpos% Y%ypos%. )
+    mapPoints[1][2]:=xpos
+    mapPoints[1][3]:=ypos
 return
 
 callBuild()
