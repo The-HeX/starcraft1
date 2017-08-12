@@ -290,19 +290,34 @@ return
     lastAction:=a_tickcount
 return
 
-^lbutton::
+~lbutton & z::
     MouseGetPos, xpos, ypos 
-    out( The cursor is at X%xpos% Y%ypos%. )
+    out( "The cursor is at X" xpos " Y" ypos )
     mapPoints[2][2]:=xpos
     mapPoints[2][3]:=ypos
 return
 
-$lbutton::
+~lbutton & x::
     MouseGetPos, xpos, ypos 
-    out( The cursor is at X%xpos% Y%ypos%. )
+    out( "The cursor is at X" xpos " Y" ypos )
     mapPoints[1][2]:=xpos
     mapPoints[1][3]:=ypos
 return
+
+a::
+    x:=mapPoints[2][2]
+    y:=mapPoints[2][3]    
+    sendkey("a")
+    Click %x%, %y%
+
+return 
+
+r:: 
+    x:=mapPoints[1][2]
+    y:=mapPoints[1][3]    
+    sendkey("m")
+    Click %x%, %y%
+    return 
 
 callBuild()
 {
