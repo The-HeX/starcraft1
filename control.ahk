@@ -305,18 +305,36 @@ return
 return
 
 a::
+    MouseGetPos, xpos, ypos 
     x:=mapPoints[2][2]
     y:=mapPoints[2][3]    
-    sendkey("a")
-    Click %x%, %y%
+    for hotkeyIndex, hotkey in hotkeys{
+        actualIndex:=hotkeyIndex-1
+        sendkey(actualIndex) 
+        sleep 250
+        sendkey("a")
+        Click %x%, %y%
+        sleep 250
+    }    
+    sleep 500
+    mousemove %xpos%, %ypos%, 
 
 return 
 
 r:: 
+    MouseGetPos, xpos, ypos 
     x:=mapPoints[1][2]
     y:=mapPoints[1][3]    
-    sendkey("m")
-    Click %x%, %y%
+    for hotkeyIndex, hotkey in hotkeys{
+        actualIndex:=hotkeyIndex-1
+        sendkey(actualIndex) 
+        sleep 250
+        sendkey("m")
+        sleep 250
+        Click %x%, %y%
+        sleep 250
+    }    
+    mousemove %xpos%, %ypos%, 
     return 
 
 callBuild()
