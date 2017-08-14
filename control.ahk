@@ -305,45 +305,17 @@ return
 return
 
 a::
-    MouseGetPos, xpos, ypos 
     x:=mapPoints[2][2]
     y:=mapPoints[2][3]    
-    for hotkeyIndex, hotkey in hotkeys{
-        if(hotkey[1]=true){            
-            if(hotkey[6]="Unit"){
-                actualIndex:=hotkeyIndex-1
-                sendkey(actualIndex) 
-                sleep 250
-                sendkey("a")
-                Click %x%, %y%
-                sleep 250
-            }
-        }
-    }    
-    sleep 500
-    mousemove %xpos%, %ypos%, 
-
+    sendCommandToCoordinates("a",x,y)
 return 
 
-r:: 
-    MouseGetPos, xpos, ypos 
+
+r::     
     x:=mapPoints[1][2]
     y:=mapPoints[1][3]    
-    for hotkeyIndex, hotkey in hotkeys{
-        if(hotkey[1]=true){            
-            if(hotkey[6]="Unit"){
-                actualIndex:=hotkeyIndex-1
-                sendkey(actualIndex) 
-                sleep 250
-                sendkey("m")
-                sleep 250
-                Click %x%, %y%
-                sleep 250
-            }
-        }
-    }    
-    mousemove %xpos%, %ypos%, 
-    return 
+    sendCommandToCoordinates("m",x,y)
+return 
 
 callBuild()
 {
@@ -659,3 +631,68 @@ sendkey(key){
         out("cannot send " . key)
     }
 }
+
+sendCommandToCoordinates(command,x,y){
+    MouseGetPos, xpos, ypos 
+    for hotkeyIndex, hotkey in hotkeys{
+        if(hotkey[1]=true){            
+            if(hotkey[6]="Unit"){
+                actualIndex:=hotkeyIndex-1
+                sendkey(actualIndex) 
+                sleep 250
+                sendkey(command)
+                Click %x%, %y%
+                sleep 250
+            }
+        }
+    }    
+    mousemove %xpos%, %ypos%, 
+    return
+}
+
+numpad7::
+sendCommandToCoordinates("a",53,738)
+return
+
+numpad8::
+sendCommandToCoordinates("a",136,738)
+return
+
+numpad9::
+sendCommandToCoordinates("a",696,738)
+return
+
+numpad4::
+sendCommandToCoordinates("a",53,821)
+return
+
+numpad5::
+sendCommandToCoordinates("a",136,821)
+return
+
+numpad6::
+sendCommandToCoordinates("a",696,821)
+return
+
+numpad1::
+sendCommandToCoordinates("a",53,863)
+return
+
+numpad2::
+sendCommandToCoordinates("a",136,863)
+return
+
+numpad3::
+sendCommandToCoordinates("a",696,863)
+return
+
+; easy attack using the number pad - numbers correspond to quadreants on the mini map
+;7	53	738	
+;8	136	738	
+;9	696	738
+;4	53	821	
+;5	136	821	
+;6	696	821
+;1	53	863	
+;2	136	863	
+;3	696	863
