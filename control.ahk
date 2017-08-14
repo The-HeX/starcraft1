@@ -249,17 +249,17 @@ reset:
                         ,["wraitH"          ,"w",20    ,true,now,0,[],"Starport"]
                         ,["Battle cruiser"  ,"b",60    ,true,now,0,[],"Starport"]]
     
-                        ; Assigned  ,Building Name  , autobuild , unit index to build (array of unit index) , upgrade index
-    global hotkeys:=[    [false     ,""                 ,false,[],[]] ;
-                        ,[false     ,""                 ,false,[],[]] ;
-                        ,[false     ,""                 ,false,[],[]] ;
-                        ,[false     ,""                 ,false,[],[]] ;
-                        ,[false     ,""                 ,false,[],[]] ;
-                        ,[false     ,""                 ,false,[],[]] ;
-                        ,[false     ,""                 ,false,[],[]] ;6
-                        ,[false     ,""                 ,false,[],[]] ;7
-                        ,[false     ,""                 ,false,[],[]] ;8
-                        ,[false     ,""                 ,false,[],[]]] ;9
+                        ; Assigned  ,Building Name  , autobuild , unit index to build (array of unit index) , upgrade index, hotkey type (building,unit)
+    global hotkeys:=[    [false     ,""                 ,false,[],[],""] ;
+                        ,[false     ,""                 ,false,[],[],""] ;
+                        ,[false     ,""                 ,false,[],[],""] ;
+                        ,[false     ,""                 ,false,[],[],""] ;
+                        ,[false     ,""                 ,false,[],[],""] ;
+                        ,[false     ,""                 ,false,[],[],""] ;
+                        ,[false     ,""                 ,false,[],[],""] ;6
+                        ,[false     ,""                 ,false,[],[],""] ;7
+                        ,[false     ,""                 ,false,[],[],""] ;8
+                        ,[false     ,""                 ,false,[],[],""]] ;9
 
                          ;Building Name     , upgrade keys
     global upgrades:= [  ["Machine Shop"    ,["s","c"]]
@@ -309,12 +309,16 @@ a::
     x:=mapPoints[2][2]
     y:=mapPoints[2][3]    
     for hotkeyIndex, hotkey in hotkeys{
-        actualIndex:=hotkeyIndex-1
-        sendkey(actualIndex) 
-        sleep 250
-        sendkey("a")
-        Click %x%, %y%
-        sleep 250
+        if(hotkey[1]=true){            
+            if(hotkey[6]="Unit"){
+                actualIndex:=hotkeyIndex-1
+                sendkey(actualIndex) 
+                sleep 250
+                sendkey("a")
+                Click %x%, %y%
+                sleep 250
+            }
+        }
     }    
     sleep 500
     mousemove %xpos%, %ypos%, 
@@ -326,13 +330,17 @@ r::
     x:=mapPoints[1][2]
     y:=mapPoints[1][3]    
     for hotkeyIndex, hotkey in hotkeys{
-        actualIndex:=hotkeyIndex-1
-        sendkey(actualIndex) 
-        sleep 250
-        sendkey("m")
-        sleep 250
-        Click %x%, %y%
-        sleep 250
+        if(hotkey[1]=true){            
+            if(hotkey[6]="Unit"){
+                actualIndex:=hotkeyIndex-1
+                sendkey(actualIndex) 
+                sleep 250
+                sendkey("m")
+                sleep 250
+                Click %x%, %y%
+                sleep 250
+            }
+        }
     }    
     mousemove %xpos%, %ypos%, 
     return 
@@ -380,18 +388,21 @@ RunUpgrades(){
 trainForAllHotkeys(index){    
         unit:=units[index]
         for hotkeyIndex, hotkey in hotkeys{
-            actualIndex:=hotkeyIndex-1
-            hotkeyName:=hotkey[2]
-            unitBuildingName:=unit[8]
-            If InStr( hotkeyName, unitBuildingName,false)
-            {
-                    out("Auto building " unit[1] " " actualIndex " "  unit[8]  " == " hotkey[2] )                    
-                    sendkey(actualIndex) 
-                    train(index)
+            ; hotkey is assigned.
+            if(hotkey[1]=true){            
+                actualIndex:=hotkeyIndex-1
+                hotkeyName:=hotkey[2]
+                unitBuildingName:=unit[8]
+                If InStr( hotkeyName, unitBuildingName,false)
+                {
+                        out("Auto building " unit[1] " " actualIndex " "  unit[8]  " == " hotkey[2] )                    
+                        sendkey(actualIndex) 
+                        train(index)
+                }
+                else{
+                    ;out("not auto building " unit[1] " " index " "  unit[8]  " != " hotkey[2] )
+                }            
             }
-            else{
-                   ;out("not auto building " unit[1] " " index " "  unit[8]  " != " hotkey[2] )
-            }            
         }    
     return
 }
@@ -446,7 +457,7 @@ SetCurrentHotkey()
     send ^%currentHotkey%
     send +{PrintScreen}
     sleep 500
-    RunWait, parse.exe "results.txt", Hide
+    RunWait, parse.exe "results.txt", Min
     sleep 250
     FileRead, result, results.txt
     Out("Identified hotkey " . result )
@@ -470,12 +481,13 @@ dumpHotKeys(){
     }                        
 }
 
-updateHotkeyUnitMappings(){
-        
+updateHotkeyUnitMappings(){        
         for hotkeyIndex, hotkey in hotkeys{
             actualIndex:=hotkeyIndex-1
             hotkeyName:=hotkey[2]
-            if(strlen(hotkeyName)>0){
+            ; assume all hotkeys are units unless, we specificly match the name with the training or upgrade collection
+            hotkey[6]="Unit"            
+            if(strlen(hotkeyName)>0){                
                 for unitIndex, unit in units
                 {
                     if(unit[4]=true){
@@ -483,6 +495,7 @@ updateHotkeyUnitMappings(){
                         If InStr( hotkeyName, unitBuildingName,false)
                         {
                             hotkeys[actualIndex][4].Add(unitIndex)
+                            hotkey[6]="Building"
                         }
                     }
                 }
@@ -492,13 +505,15 @@ updateHotkeyUnitMappings(){
                     If InStr( hotkeyName, upgradeBuildingName,false)
                     {
                         hotkeys[actualIndex][5].Add(unitIndex)
+                        hotkey[6]="Building"
                     }
                 }                
             }
             else{
-                hotkeys[actualIndex][4]:=[]
-                hotkeys[actualIndex][5]:=[]
-            }                        
+                hotkey[4]:=[]
+                hotkey[5]:=[]
+                
+            }   
         }    
     return
 }

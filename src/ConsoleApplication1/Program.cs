@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Patagames.Ocr;
 using Patagames.Ocr.Enums;
@@ -78,6 +79,8 @@ namespace ConsoleApplication1
             {
                 format = format.Replace(replace, "");
             }
+            Regex rgx = new Regex("[^a-zA-Z0-9 -]");
+            format = rgx.Replace(format, "");
             return format
                     .TrimStart(' ')
                     .TrimEnd(' ');
